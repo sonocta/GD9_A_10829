@@ -19,17 +19,21 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Keeps phone in light mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
         square = findViewById(R.id.tv_square)
 
         setUpSensorStuff()
     }
 
     private fun setUpSensorStuff() {
+        // Create the sensor manager
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
 
-        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
-                accelerometer -> sensorManager.registerListener(
+        // Specify the sensor you want to listen to
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also { accelerometer ->
+            sensorManager.registerListener(
                 this,
                 accelerometer,
                 SensorManager.SENSOR_DELAY_FASTEST,
@@ -39,8 +43,14 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
+        // Checks for the sensor we have registered
         if (event?.sensor?.type == Sensor.TYPE_ACCELEROMETER) {
+            //Log.d("Main", "onSensorChanged: sides ${event.values[0]} front/back ${event.values[1]} ")
+
+            // Sides = Tilting phone left(10) and right(-10)
             val sides = event.values[0]
+
+            // Up/Down = Tilting phone up(10), flat (0), upside-down(-10)
             val upDown = event.values[1]
 
             square.apply {
@@ -50,11 +60,12 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
                 translationX = sides * -10
                 translationY = upDown * 10
             }
-            val color = if (upDown.toInt() == 0 && sides.toInt() == 0)
-                Color.GREEN else Color.RED
+
+            // Changes the colour of the square if it's completely flat
+            val color = if (upDown.toInt() == 0 && sides.toInt() == 0) Color.GREEN else Color.RED
             square.setBackgroundColor(color)
 
-            square.text = "up/down ${upDown.toInt()} \n left/right ${sides.toInt()}"
+            square.text = "up/down ${upDown.toInt()}\nleft/right ${sides.toInt()}"
         }
     }
 
@@ -66,6 +77,4 @@ class MainActivity : AppCompatActivity(), SensorEventListener {
         sensorManager.unregisterListener(this)
         super.onDestroy()
     }
-
-
 }
